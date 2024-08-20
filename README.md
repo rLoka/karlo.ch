@@ -1,2 +1,0 @@
-# karlo.ch
-Personal Webpage
