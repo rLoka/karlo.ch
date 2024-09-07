@@ -1,0 +1,284 @@
+/* Reset */
+body {
+    color: #333;
+    background-color: #e9e9e9;
+    margin: 0;
+}
+
+/* Layout */
+.page {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0 auto;
+    max-width: 700px;
+    background-color: #ffffff;
+}
+
+.profile-photo {
+    border-radius: 50%;
+    border-width: 5px;
+    border-color: #000;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+}
+
+.content {
+    font-family: 'Times New Roman', serif;
+    font-size: 16px;
+    line-height: 1.5;
+    justify-content: center;
+    align-items: center;
+    padding-top: 32px;
+    margin: 0 auto; /* Add 100px margin at the top */
+    width: 100%; /* Take 100% of the parent width */
+}
+
+.about {
+    text-align: center;
+    width: 100%; /* Take 100% of the parent width */
+}
+
+.post-entry-list {
+    padding: 0px 30px 10px 30px;
+}
+
+.post-area {
+    padding: 0px 30px 10px 30px;
+}
+
+.post-entry-title {
+    margin: 0px 0px 5px 0px;
+    font-family: 'Times New Roman', serif;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.post-entry-date {
+    margin-top: 5px;
+    font-family: 'Times New Roman', serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: #6d6d6d;
+}
+
+.post-entry-description {
+    margin: 0px;
+    font-family: 'Times New Roman', serif;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.post-title {
+    margin-bottom: 0px;
+}
+
+.post-date {
+    font-family: 'Times New Roman', serif;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: right;
+    color: #6d6d6d;
+}
+
+/* Typography */
+a:link { 
+    text-decoration: none; 
+}
+
+a:visited { 
+    text-decoration: none; 
+}
+
+a:hover { 
+    text-decoration: none; 
+}
+
+a:active { 
+    text-decoration: none; 
+}  
+
+h1 {
+    font-family: 'Times New Roman', serif;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+h2 {
+    font-family: 'Times New Roman', serif;
+    font-size: 20px;
+    font-weight: 400;
+}
+
+h3 {
+    font-family: 'Times New Roman', serif;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+h4 {
+    font-family: 'Times New Roman', serif;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+h5 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* Components */
+.author {
+    margin-top: 20px;
+}
+
+.author > a {
+    font-family: 'Times New Roman', serif;
+    font-size: 32px;
+    font-weight: 400;
+    margin-block-end: 0;
+}
+
+.authors-short-resume {
+    font-family: 'Times New Roman', serif;
+    font-size: 14px;
+    font-weight: 400;
+    font-style: italic;
+    color: dimgray;
+    margin-top: 10px;
+}
+
+hr {
+    width: 100%;
+    margin: 20px 0;
+    border: 1px solid #e6e6e6d0;
+}
+
+pre {
+    padding: 10px;
+    background-color: rgb(238, 238, 238);
+    border-radius: 5px;
+    overflow-x: auto;
+    font-size: 12px;
+}
+
+.social {
+    padding: 10px;
+    font-size: 32px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%; /* Take 100% of the parent width */
+}
+
+.social-email {
+    margin-top: -10px;
+}
+
+.email {
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+    background-color: #dfdfdf;
+    color: #000000;
+    border-width: 5px;
+    border-color: #333;
+    padding: 5px;
+    border-radius: 7px;
+    text-align: center;
+    margin: 0;
+}
+
+.email::after {
+    content: "karlo@mail.com";
+}
+
+.email:hover {
+    background-color: #d4d4d4;
+}
+
+.social-email:hover {
+    cursor: pointer;
+}
+
+.social-email:hover > #copy-email {
+    display: unset;
+}
+
+.social-email:active > #copy-email {
+    display: none;
+}
+
+.social-email:active > #copied-email::after {
+    content: Copied to your clipboard!;
+}
+
+#copy-email {
+    font-size: 16px;
+    color: #d4d4d4;
+    padding-top: 7px;
+    margin-left: 1px;
+    display: none;
+}
+
+#copied-email {
+    font-size: 16px;
+    font-style: italic;
+    color: #6d6d6d;
+    padding-top: 7px;
+    margin-left: 5px;
+}
+
+/* Links */
+a:has(.fab) {
+    padding: 5px;
+    color: grey;
+}
+
+a:has(.fab):hover {}
+
+a:has(.fab):active {}
+
+#linkedin-link:hover {
+    color: rgb(18, 103, 201);
+}
+
+#schoolar-link:hover {
+    color: rgb(128, 183, 228);
+}
+
+#github-link:hover {
+    color: rgb(54, 54, 54);
+}
+
+/* Post navigation */
+.post-navigation {
+    display: flex;
+    justify-content: space-between;
+    width: 100%; /* Take 100% of the parent width */
+}
+
+#previous-post {
+    text-align: left;
+}
+
+#next-post {
+    text-align: right;
+}
+
+.post-navigation-date {
+    margin-top: 5px;
+    font-family: 'Times New Roman', serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #6d6d6d;
+}
+
+.post-navigation-label {
+    margin-bottom: 5px;
+    font-family: 'Times New Roman', serif;
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    color: #6d6d6d;
+}
