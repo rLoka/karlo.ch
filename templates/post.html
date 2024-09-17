@@ -1,75 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8"/>
-        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-        <meta name="description" content="Karlo Grlić - Blog of a Software Engineer">
-        <meta name="keywords" content="Karlo, Grlić, Software, Engineer, Blog">
-        <meta name="author" content="Karlo Grlić">
-        <script crossorigin="anonymous" src="https://kit.fontawesome.com/92c1869a93.js">
-        </script>
-        <link href="/static/css/style.css" rel="stylesheet"/>
-        <title>
-            Karlo Grlić - Blog of a Software Engineer
-        </title>
-    </head>
-    <body>
-        <div class="page">
-            <div class="social">
-                <div class="social-email" title="Click to copy email">
-                    <span class="email">
-                    </span>
-                    <span class="fa-solid fa-copy" id="copy-email">
-                    </span>
-                    <span id="copied-email">
-                    </span>
-                </div>
-                <div class="social-profiles">
-                    <a href="https://www.linkedin.com/in/karlo-grlic/" id="linkedin-link" target="_blank" title="LinkedIn Profile">
-                        <i class="fab fa-linkedin">
-                        </i>
-                    </a>
-                    <a href="https://scholar.google.com/citations?user=eKHmfDUAAAAJ&hl=en" id="schoolar-link" target="_blank" title="Google Schoolar Profile">
-                        <i class="fab fa-google-scholar">
-                        </i>
-                    </a>
-                    <a href="https://github.com/rLoka" id="github-link" target="_blank" title="Github Profile">
-                        <i class="fab fa-github">
-                        </i>
-                    </a>
-                </div>
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="description" content="Karlo Grlić - Blog of a Software Engineer">
+    <meta name="keywords" content="Karlo, Grlić, Software, Engineer, Blog">
+    <meta name="author" content="Karlo Grlić">
+    <script crossorigin="anonymous" src="https://kit.fontawesome.com/92c1869a93.js">
+    </script>
+    <link href="/static/css/style.css" rel="stylesheet" />
+    <title>
+        Karlo Grlić - Blog of a Software Engineer
+    </title>
+</head>
+
+<body>
+    <div class="page">
+        <div class="social">
+            <div class="social-email" title="Click to copy email">
+                <span class="email">
+                </span>
+                <span class="fa-solid fa-copy" id="copy-email">
+                </span>
+                <span id="copied-email">
+                </span>
             </div>
-            <div class="content">
-                <div class="about">
-                    <div class="profile-photo-link">
-                        <a href="/">
-                            <img alt="Karlo Grlić" class="profile-photo" src="/static/img/profile.jpg"/>
-                        <a>
-                    </div>                    
-                    <div class="author">
-                        <a href="/" rel="author">Karlo Grlić<a>
-                    </div>
-                    <p class="authors-short-resume">
-                        Software Engineer @
-                        <a href="https://www.gideon.ai/" target="_blank" title="Gideon Home Page">
-                            Gideon
-                        </a>
-                    </p>
-                </div>
-                <div class="post-area">
-                    <div id="post-content" class="post-content">
-                        <!-- Post will be injected here -->
-                    </div>
-                    <div id="post-navigation" class="post-navigation">
-                        <!-- Post navigation will be injected here -->
-                    </div>
-                </div>
-                <div class="footer">
-                    <hr/>
-                </div>
-                <script src="/static/js/script.js">
-                </script>
+            <div class="social-profiles">
+                <a href="https://www.linkedin.com/in/karlo-grlic/" id="linkedin-link" target="_blank"
+                    title="LinkedIn Profile">
+                    <i class="fab fa-linkedin">
+                    </i>
+                </a>
+                <a href="https://scholar.google.com/citations?user=eKHmfDUAAAAJ&hl=en" id="schoolar-link"
+                    target="_blank" title="Google Schoolar Profile">
+                    <i class="fab fa-google-scholar">
+                    </i>
+                </a>
+                <a href="https://github.com/rLoka" id="github-link" target="_blank" title="Github Profile">
+                    <i class="fab fa-github">
+                    </i>
+                </a>
             </div>
         </div>
-    </body>
+        <div class="content">
+            <div class="about">
+                <div class="profile-photo-link">
+                    <a href="/">
+                        <img alt="Karlo Grlić" class="profile-photo" src="/static/img/profile.jpg" />
+                        <a>
+                </div>
+                <div class="author">
+                    <a href="/" rel="author">Karlo Grlić<a>
+                </div>
+                <p class="authors-short-resume">
+                    Software Engineer @
+                    <a href="https://www.gideon.ai/" target="_blank" title="Gideon Home Page">
+                        Gideon
+                    </a>
+                </p>
+            </div>
+            <div class="post-area">
+                <div id="post-content" class="post-content">
+                    <article class="post" id="post-{{ post.id }}">
+                        <header>
+                            <h1 class="post-title">
+                                {{ post.title }}
+                            </h1>
+                            <time class="post-date" datetime="{{ post.date }}">
+                                {{ post.date.strftime("%B %d, %Y") }}
+                            </time>
+                        </header>
+                        <hr />
+                        {{ post.content }}
+                    </article>
+                </div>
+                <div id="post-navigation" class="post-navigation">
+                    <div id="previous-post" class="post-navigation-item">
+                        {% if post.previous %}
+                        <p class="post-navigation-label">Previous</p>
+                        <a id="previous-post-link" href="/{{ post.previous.url }}">{{ post.previous.title }}</a>
+                        <p id="previous-post-date" class="post-navigation-date">{{ post.previous.date.strftime("%B %d,%Y") }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div id="next-post" class="post-navigation-item">
+                        {% if post.next %}
+                        <p class="post-navigation-label">Next</p>
+                        <a id="next-post-link" href="/{{ post.next.url }}">{{ post.next.title }}</a>
+                        <p id="next-post-date" class="post-navigation-date">{{ post.next.date.strftime("%B %d, %Y") }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="footer">
+                <hr />
+            </div>
+            <script src="/static/js/script.js">
+            </script>
+        </div>
+    </div>
+</body>
+
 </html>
