@@ -61,7 +61,7 @@
                         Posts
                     </h1>
                     <hr/>
-                    {% for post in posts %}
+                    {% for post in posts|reverse %}
                         <div id="{{ post.id }}">
                             <h2 class="post-entry-title">
                                 <a href="/{{ post.url }}">
@@ -72,7 +72,7 @@
                                 {{ post.description }}
                             </p>
                             <p class="post-entry-date">
-                                {{ post.date }}
+                                {{ post.date.strftime("%B %d, %Y") }}
                             </p>
                             <hr>
                         </div>
