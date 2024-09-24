@@ -1,6 +1,5 @@
-import os
-import shutil
 import pathlib
+import shutil
 import markdown
 import yaml
 import jinja2
@@ -8,7 +7,6 @@ import datetime
 import logging
 from dataclasses import dataclass, field
 from typing import Any, List, Dict
-from glob import glob
 
 # Constants
 CONFIG_PATH = './config.yaml'
@@ -37,21 +35,18 @@ class Post:
 class Paula:
     def __init__(self, config_path: str = CONFIG_PATH):
         self._config: Dict[str, Any] = self._load_config(config_path)
-        self._theme_path: str = os.path.join(
-            self._config.get("templates_directory", "./templates"), 
-            self._config.get("template", DEFAULT_TEMPLATE)
-        )
-        self._pages_path: str = self._config.get("static_pages_directory", DEFAULT_STATIC_PAGES_DIR)
-        self._posts_path: str = self._config.get("posts_directory", DEFAULT_POSTS_DIR)
-        self._post_template_file_path: str = os.path.join(
-            self._theme_path, 
-            self._config.get("post_template_file", DEFAULT_POST_TEMPLATE_FILE)
-        )
+        self._theme_path: pathlib.Path = pathlib.Path(
+            self._config.get("templates_directory", "./templates")
+        ) / self._config.get("template", DEFAULT_TEMPLATE)
+        self._pages_path: pathlib.Path = pathlib.Path(self._config.get("static_pages_directory", DEFAULT_STATIC_PAGES_DIR))
+        self._posts_path: pathlib.Path = pathlib.Path(self._config.get("posts_directory", DEFAULT_POSTS_DIR))
+        self._post_template_file_path: pathlib.Path = self._theme_path / self._config.get("post_template_file", DEFAULT_POST_TEMPLATE_FILE)
         self._posts: List[Post] = []
         if self._config.get('render_posts', True):
             self._posts = self._load_posts()
 
     def _load_config(self, config_path: str) -> Dict[str, Any]:
+        """Load configuration from a YAML file."""
         try:
             with open(config_path, 'r') as file:
                 return yaml.safe_load(file)
@@ -62,9 +57,10 @@ class Paula:
             logging.error(f"Error parsing config file: {e}")
             raise
 
-    def _load_post(self, post_path: str) -> Post:
+    def _load_post(self, post_path: pathlib.Path) -> Post:
+        """Load a single post from a markdown file."""
         try:
-            with open(post_path, 'r') as file:
+            with post_path.open('r') as file:
                 content = file.read()
         except FileNotFoundError:
             logging.error(f"Post file not found: {post_path}")
@@ -84,8 +80,9 @@ class Paula:
         )
 
     def _load_posts(self) -> List[Post]:
+        """Load all posts from the posts directory and sort them by date."""
         posts: List[Post] = sorted(
-            map(self._load_post, glob(os.path.join(self._posts_path, '*', '*.md'))),
+            map(self._load_post, self._posts_path.rglob('*.md')),
             key=lambda post: post.date
         )
         
@@ -96,9 +93,10 @@ class Paula:
 
         return posts
 
-    def _extract_post_metadata(self, post_path: str) -> Dict[str, Any]:
+    def _extract_post_metadata(self, post_path: pathlib.Path) -> Dict[str, Any]:
+        """Extract metadata from a post file."""
         try:
-            with open(post_path, 'r') as file:
+            with post_path.open('r') as file:
                 content = file.read().split('---', 2)    
             return yaml.safe_load(content[1].strip()) if len(content) >= 2 else {}
         except FileNotFoundError:
@@ -109,8 +107,9 @@ class Paula:
             raise
 
     def _render_post_page(self, post: Post) -> None:
+        """Render a single post page."""
         try:
-            with open(self._post_template_file_path, 'r') as template_file:
+            with self._post_template_file_path.open('r') as template_file:
                 post_template_html: str = template_file.read()
         except FileNotFoundError:
             logging.error(f"Post template file not found: {self._post_template_file_path}")
@@ -121,33 +120,34 @@ class Paula:
             **self._config['context']
         )
 
-        post_output_path = os.path.join(self._pages_path, post.url, 'index.html')
-        os.makedirs(os.path.dirname(post_output_path), exist_ok=True)
+        post_output_path = self._pages_path / post.url / 'index.html'
+        post_output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(post_output_path, 'w') as post_page_file:
+        with post_output_path.open('w') as post_page_file:
             post_page_file.write(post_template_html)
 
     def _render_posts(self):        
+        """Render all posts."""
         for post in self._posts:
             self._render_post_page(post=post)
 
     def _render_pages(self):
-        for root, dirs, files in os.walk(self._pages_path):
-            for file in files:
-                if file.endswith('.html') and \
-                    not self._config.get('post_template_file') in os.path.join(root, file):
-                    with open(os.path.join(root, file), 'r') as template_file:
-                        template_html: str = template_file.read()
+        """Render all static pages."""
+        for file_path in self._pages_path.rglob('*.html'):
+            if self._config.get('post_template_file') not in str(file_path):
+                with file_path.open('r') as template_file:
+                    template_html: str = template_file.read()
 
-                    template_html = jinja2.Template(template_html).render(
-                        posts=self._posts,
-                        **self._config['context']
-                    )
+                template_html = jinja2.Template(template_html).render(
+                    posts=self._posts,
+                    **self._config['context']
+                )
 
-                    with open(os.path.join(root, file), 'w') as rendered_file:
-                        rendered_file.write(template_html)
+                with file_path.open('w') as rendered_file:
+                    rendered_file.write(template_html)
 
     def _create_pages_directory(self):
+        """Create the pages directory by copying the theme."""
         try:
             shutil.copytree(src=self._theme_path, dst=self._pages_path)
         except FileExistsError:
@@ -157,6 +157,7 @@ class Paula:
             raise
 
     def clean(self) -> None:
+        """Clean the pages directory."""
         try:
             shutil.rmtree(self._pages_path)
         except FileNotFoundError:
@@ -166,6 +167,7 @@ class Paula:
             raise
 
     def build(self) -> None:
+        """Build the static site."""
         self.clean()
         self._create_pages_directory()
         self._render_pages()
