@@ -5,9 +5,20 @@ import markdown
 import yaml
 import jinja2
 import datetime
+import logging
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, List, Dict
 from glob import glob
+
+# Constants
+CONFIG_PATH = './config.yaml'
+DEFAULT_TEMPLATE = 'pear'
+DEFAULT_STATIC_PAGES_DIR = './pages'
+DEFAULT_POSTS_DIR = './posts'
+DEFAULT_POST_TEMPLATE_FILE = 'post.html'
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @dataclass
 class Post:
@@ -16,36 +27,49 @@ class Post:
     date: str = ''
     description: str = ''
     id: int = 0
-    keywords: list[str] = field(default_factory=list)
-    tags: list[str] = field(default_factory=list)
+    keywords: List[str] = field(default_factory=list)
+    tags: List[str] = field(default_factory=list)
     title: str = ''
     url: str = ''
+    next: 'Post' = None
+    previous: 'Post' = None
 
 class Paula:
-    def __init__(self, config_path: str = './config.yaml'):
-        self._config: dict[str, Any] = self._load_config(config_path)
+    def __init__(self, config_path: str = CONFIG_PATH):
+        self._config: Dict[str, Any] = self._load_config(config_path)
         self._theme_path: str = os.path.join(
             self._config.get("templates_directory", "./templates"), 
-            self._config.get("template", "pear")
+            self._config.get("template", DEFAULT_TEMPLATE)
         )
-        self._pages_path: str = self._config.get("static_pages_directory", "./pages")
-        self._posts_path: str = self._config.get("posts_directory", "./posts")
+        self._pages_path: str = self._config.get("static_pages_directory", DEFAULT_STATIC_PAGES_DIR)
+        self._posts_path: str = self._config.get("posts_directory", DEFAULT_POSTS_DIR)
         self._post_template_file_path: str = os.path.join(
             self._theme_path, 
-            self._config.get("post_template_file", "post.html")
+            self._config.get("post_template_file", DEFAULT_POST_TEMPLATE_FILE)
         )
-        self._posts: list[Post] = []
+        self._posts: List[Post] = []
         if self._config.get('render_posts', True):
             self._posts = self._load_posts()
 
-    def _load_config(self, config_path: str) -> dict[str, Any]:
-        with open(config_path, 'r') as file:
-            return yaml.safe_load(file)
+    def _load_config(self, config_path: str) -> Dict[str, Any]:
+        try:
+            with open(config_path, 'r') as file:
+                return yaml.safe_load(file)
+        except FileNotFoundError:
+            logging.error(f"Config file not found: {config_path}")
+            raise
+        except yaml.YAMLError as e:
+            logging.error(f"Error parsing config file: {e}")
+            raise
 
     def _load_post(self, post_path: str) -> Post:
-        with open(post_path, 'r') as file:
-            content = file.read()
-        
+        try:
+            with open(post_path, 'r') as file:
+                content = file.read()
+        except FileNotFoundError:
+            logging.error(f"Post file not found: {post_path}")
+            raise
+
         metadata = self._extract_post_metadata(post_path)
         
         return Post(
@@ -59,9 +83,8 @@ class Paula:
             author=metadata.get('author', '')
         )
 
-    def _load_posts(self) -> list[Post]:
-        # Load all posts from the posts directory and sort them by date
-        posts: list[Post] = sorted(
+    def _load_posts(self) -> List[Post]:
+        posts: List[Post] = sorted(
             map(self._load_post, glob(os.path.join(self._posts_path, '*', '*.md'))),
             key=lambda post: post.date
         )
@@ -73,29 +96,35 @@ class Paula:
 
         return posts
 
-    def _extract_post_metadata(self, post_path: str) -> dict[str, Any]:
-        with open(post_path, 'r') as file:
-            content = file.read().split('---', 2)    
-        
-        return yaml.safe_load(content[1].strip()) if len(content) >= 2 else {}
+    def _extract_post_metadata(self, post_path: str) -> Dict[str, Any]:
+        try:
+            with open(post_path, 'r') as file:
+                content = file.read().split('---', 2)    
+            return yaml.safe_load(content[1].strip()) if len(content) >= 2 else {}
+        except FileNotFoundError:
+            logging.error(f"Post file not found: {post_path}")
+            raise
+        except yaml.YAMLError as e:
+            logging.error(f"Error parsing post metadata: {e}")
+            raise
 
     def _render_post_page(self, post: Post) -> None:
-        with open(self._post_template_file_path, 'r') as template_file:
-            post_template_html: str = template_file.read()
+        try:
+            with open(self._post_template_file_path, 'r') as template_file:
+                post_template_html: str = template_file.read()
+        except FileNotFoundError:
+            logging.error(f"Post template file not found: {self._post_template_file_path}")
+            raise
 
-        # Use jinja2 to render the post template
         post_template_html = jinja2.Template(post_template_html).render(
             post=post,
             **self._config['context']
         )
 
-        # Create directories if they don't exist
-        os.makedirs(
-            os.path.dirname(f'{self._pages_path}/{post.url}/index.html'), 
-            exist_ok=True
-        )
+        post_output_path = os.path.join(self._pages_path, post.url, 'index.html')
+        os.makedirs(os.path.dirname(post_output_path), exist_ok=True)
 
-        with open(f'{self._pages_path}/{post.url}/index.html', 'w') as post_page_file:
+        with open(post_output_path, 'w') as post_page_file:
             post_page_file.write(post_template_html)
 
     def _render_posts(self):        
@@ -103,7 +132,6 @@ class Paula:
             self._render_post_page(post=post)
 
     def _render_pages(self):
-        # traverse all html files in pages directory and render them using jinja, recursively
         for root, dirs, files in os.walk(self._pages_path):
             for file in files:
                 if file.endswith('.html') and \
@@ -120,12 +148,22 @@ class Paula:
                         rendered_file.write(template_html)
 
     def _create_pages_directory(self):
-        shutil.copytree(src=self._theme_path, dst=self._pages_path)
+        try:
+            shutil.copytree(src=self._theme_path, dst=self._pages_path)
+        except FileExistsError:
+            logging.warning(f"Pages directory already exists: {self._pages_path}")
+        except Exception as e:
+            logging.error(f"Error creating pages directory: {e}")
+            raise
 
     def clean(self) -> None:
-        shutil.rmtree(
-            self._config.get("static_pages_directory", "./pages")
-        )
+        try:
+            shutil.rmtree(self._pages_path)
+        except FileNotFoundError:
+            logging.warning(f"Pages directory not found: {self._pages_path}")
+        except Exception as e:
+            logging.error(f"Error cleaning pages directory: {e}")
+            raise
 
     def build(self) -> None:
         self.clean()
