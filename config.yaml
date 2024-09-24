@@ -1,0 +1,22 @@
+# Main configuration file for paula.md
+
+# Template
+template: "pear"
+templates_directory: "./templates"
+
+# Pages
+static_pages_directory: "./pages"
+
+# Posts
+render_posts: true
+post_template_file: "post.html"
+posts_directory: "./posts"
+
+# Context is your custom data that is
+# available in your templates for example
+# <title>{{ blog.title }}</title>
+context:
+  author: "Karlo Grlić"
+  email: "karlo@mail.com"
+  blog:
+    title: "Karlo Grlić - Blog of a Software Engineer"
