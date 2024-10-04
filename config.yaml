@@ -1,12 +1,9 @@
-# Main configuration file for paula.md
-
+# Main configuration file for typd
 # Template
-template: "pear"
+template: "simple"
 templates_directory: "./templates"
-
 # Pages
 static_pages_directory: "./pages"
-
 # Posts
 render_posts: true
 post_template_file: "post.html"

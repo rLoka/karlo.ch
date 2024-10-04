@@ -27,12 +27,14 @@ class Post:
     id: int = 0
     keywords: List[str] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)
+    category: str = ''
     title: str = ''
     url: str = ''
     next: 'Post' = None
     previous: 'Post' = None
+    reading_time: int = 0
 
-class Paula:
+class Typd:
     def __init__(self, config_path: str = CONFIG_PATH):
         self._config: Dict[str, Any] = self._load_config(config_path)
         self._theme_path: pathlib.Path = pathlib.Path(
@@ -75,8 +77,10 @@ class Paula:
             description=metadata.get('description', 'No description'),
             url=metadata.get('url', ''),
             tags=metadata.get('tags', []),
+            category=metadata.get('category', ''),
             keywords=metadata.get('keywords', []),
-            author=metadata.get('author', '')
+            author=metadata.get('author', ''),
+            reading_time=self._estimate_reading_time(content)
         )
 
     def _load_posts(self) -> List[Post]:
@@ -105,6 +109,12 @@ class Paula:
         except yaml.YAMLError as e:
             logging.error(f"Error parsing post metadata: {e}")
             raise
+
+    def _estimate_reading_time(self, content: str) -> int:
+        """Estimate reading time of a post."""
+        words_per_minute = 200
+        word_count = len(content.split())
+        return word_count // words_per_minute
 
     def _render_post_page(self, post: Post) -> None:
         """Render a single post page."""
@@ -176,5 +186,6 @@ class Paula:
             self._render_posts()
 
 if __name__ == "__main__":
-    paula: Paula = Paula()
-    paula.build()
+    typd: Typd = Typd()
+    typd.build()
+    
